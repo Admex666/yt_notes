@@ -143,54 +143,41 @@ A fontos részleteket és nüanszokat ne áldozd fel a rövidség kedvéért. In
 
 A hossza nagyjából 400 és 1200 szó között legyen!
 
+## ANTI-PATTERNS & FORMATTING RULES (CRITICAL)
+
+- **SZIGORÚAN KERÜLD A HÁRMAS SZABÁLYT (NO RULE OF THREE):** Ne írj automatikusan 3 bullet pointot minden fejléc alá! Ez az egyik legrosszabb AI-klisé, ami sekélyes, erőltetett felsorolásokat szül. A pontok száma szigorúan a tartalomtól függjön: lehet 1 alaposan kifejtett gondolat, 2 éles kontraszt, vagy akár 4-5 konkrét lépés – pont annyi, amennyi a videóban ténylegesen elhangzott.
+- **FOLYÓSZÖVEG (PROSE) A FELSOROLÁSOK ELŐTT:** A `🎯 Main Takeaway` és a `💡 Core Ideas` szekciókban **kifejtős, logikusan egymásra épülő bekezdéseket (folyószöveget)** írj bullet pointok helyett! Mutasd meg a gondolatok közötti ok-okozati összefüggéseket.
+- **ASZIMMETRIKUS, ORGANIKUS STRUKTÚRA:** Ne legyen minden szekció egyforma hosszú! A jegyzet terjedelmének 60-70%-át arra az 1-2 szekcióra fordítsd, ahol a videónak valóban mély, kiemelkedő mondanivalója van.
+- **ZERO FILLER / ELHAGYHATÓ SZEKCIÓK:** Ha a videóban nincs valódi, különálló keretrendszer (framework), vagy nincsenek lényeges korlátok (caveats), **ne találj ki semmit csak azért, hogy tele legyen a fejléc**! Ilyenkor a szekciót vagy hagyd el teljesen, vagy zárd le 1 tömör mondattal.
+- **RELEVANCIA SZŰRÉS:** A `🔗 Personal Relevance` szekcióban csak olyan területeket említs, amelyekhez a tartalom organikusan, erőlködés nélkül kapcsolódik. Ha csak 1 területhez kapcsolódik, akkor csak arról írj.
+
 ## STRUCTURE TO FOLLOW
 
 # [Clear and descriptive title in the target language]
 
 ## 🎯 Main Takeaway
-The central idea of the selected narrative in 1-3 concise paragraphs.
+The central idea of the selected narrative in 1-3 concise, well-written paragraphs (no bullet points).
 
 ## 💡 Core Ideas
 Explain the most important ideas that support the narrative.
-Focus on:
-- What the idea is
-- Why it matters
-- The deeper implication
-- How different ideas connect to each other
+Write this as structured paragraphs / prose demonstrating how the ideas connect, why they matter, and what their deeper implications are. Avoid turning this into a disconnected bullet list.
 
-## 🧠 Frameworks & Mental Models
-Extract reusable:
-- Frameworks
-- Principles
-- Decision rules
-- Mental models
-- Templates
-- Systems
-Make them understandable independently from the video.
+## 🧠 Frameworks & Mental Models (Csak ha valóban van a videóban!)
+Extract reusable principles, mental models, decision rules, or systems.
+Explain their inner mechanics independently from the video. If only 1 exists, explain that 1 deeply. If none exist, omit this section.
 
 ## 🛠️ Practical Applications
-Where appropriate, translate the ideas into:
-- Actions
-- Experiments
-- Tests
-- Questions to consider
-- Ways to apply the ideas
-Only include applications that genuinely follow from the content.
+Translate the ideas into concrete actions, experiments, tests, or questions to consider.
+Use bullet points here ONLY if they represent distinct, executable actions.
 
 ## ⭐ Ideas Worth Remembering
-Highlight the most valuable, surprising or memorable insights.
+Highlight 1-3 truly surprising, high-leverage, or memorable insights that are worth keeping long-term.
 
 ## 🔗 Personal Relevance
-Where genuinely relevant, connect the ideas to:
-- Business / entrepreneurship
-- AI / automation
-- Data / analytics
-- Football analytics
-- Productivity and personal systems
-Do not force connections where they do not naturally follow.
+Connect the core thesis strictly to 1-2 areas where it naturally applies (e.g. Business, AI, Data, Productivity). Do not force artificial links to all domains.
 
-## ⚠️ Nuances & Caveats
-Preserve important qualifications, assumptions, limitations or context that would otherwise be lost in a simplified summary.
+## ⚠️ Nuances & Caveats (Opcionális)
+Preserve important qualifications, assumptions, limitations or context. Omit if not applicable.
 
 ---
 
@@ -198,12 +185,9 @@ Preserve important qualifications, assumptions, limitations or context that woul
 - Language: {language}
 - Markdown format
 - Designed for Notion
-- Insight-dense
-- Clear and logical
-- Avoid generic filler
-- Avoid unnecessary repetition
-- Preserve important nuances
-- Do not invent information
+- Insight-dense, thoughtful, natural tone
+- Avoid generic filler and repetitive sentence structures
+- Never force equal length or equal bullet counts across headers
 - Prefer a coherent narrative over a collection of disconnected bullet points
 """
 
