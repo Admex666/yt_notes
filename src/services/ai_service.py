@@ -83,7 +83,12 @@ def generate_final_note(
     """
     tags_str = ", ".join(available_tags) if available_tags else "Productivity, Learning, Business, AI, Psychology"
     
-    system_prompt = SYSTEM_PROMPT_FINAL_NOTE.format(language=language)
+    if language in ["A videó eredeti nyelve", "The original language of the video"]:
+        lang_instruction = "The original language of the video transcript (e.g. if the video is in English, write the entire note in English; if Hungarian, write in Hungarian)"
+    else:
+        lang_instruction = language
+
+    system_prompt = SYSTEM_PROMPT_FINAL_NOTE.format(language=lang_instruction)
     user_prompt = PROMPT_FINAL_NOTE_USER_TEMPLATE.format(
         title=title,
         url=url,

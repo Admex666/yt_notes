@@ -47,3 +47,5 @@ MODEL_METADATA = {
 
 DEFAULT_MODEL = "gemini-3.5-flash-lite"
 PLAN_INFO_URL = "https://aistudio.google.com/plan_information"
+DEFAULT_PLAYLIST_URL = os.getenv("DEFAULT_PLAYLIST_URL", "https://www.youtube.com/playlist?list=PLr-48e7JNg_5abe8pP-7fZCMM2KThq61z")
+DEFAULT_LANGUAGE = "A videó eredeti nyelve"

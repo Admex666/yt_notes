@@ -7,7 +7,9 @@ from src.config import (
     NOTION_DATABASE_ID,
     MODEL_METADATA,
     DEFAULT_MODEL,
-    PLAN_INFO_URL
+    PLAN_INFO_URL,
+    DEFAULT_PLAYLIST_URL,
+    DEFAULT_LANGUAGE
 )
 from src.services import youtube_service, notion_service, ai_service
 
@@ -145,7 +147,7 @@ with st.sidebar:
 
     lang_choice = st.selectbox(
         "Jegyzet nyelve",
-        options=["Hungarian", "English", "A videó eredeti nyelve"],
+        options=["A videó eredeti nyelve", "Hungarian", "English"],
         index=0
     )
 
@@ -192,6 +194,7 @@ with st.sidebar:
     st.markdown("### 📋 YouTube Forrás")
     playlist_url = st.text_input(
         "YouTube Playlist vagy Videó URL",
+        value=DEFAULT_PLAYLIST_URL,
         placeholder="https://www.youtube.com/playlist?list=..."
     )
 
