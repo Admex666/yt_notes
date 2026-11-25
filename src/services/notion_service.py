@@ -61,26 +61,117 @@ def get_existing_video_urls(database_id: str) -> Set[str]:
 
     return existing_urls
 
+def parse_inline_markdown(text: str) -> List[Dict]:
+    """
+    Átalakítja a Markdown szövegrészleteket valódi Notion rich_text elemekké:
+    kezeli a **félkövér**, *dőlt*, `kód` és [szöveg](https://link) formázásokat,
+    hogy ne maradjanak nyers csillagok a Notionben.
+    """
+    if not text:
+        return []
+
+    token_pattern = re.compile(
+        r'(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\(https?://[^\s)]+\)|\*[^*\n]+\*)'
+    )
+    parts = token_pattern.split(text)
+    rich_items: List[Dict] = []
+
+    def _add_segment(content: str, bold: bool = False, italic: bool = False, code: bool = False, link: Optional[str] = None):
+        if not content:
+            return
+        for start in range(0, len(content), 1900):
+            chunk = content[start:start + 1900]
+            text_obj: Dict = {"content": chunk}
+            if link:
+                text_obj["link"] = {"url": link}
+            item: Dict = {"type": "text", "text": text_obj}
+            if bold or italic or code:
+                item["annotations"] = {
+                    "bold": bold,
+                    "italic": italic,
+                    "code": code,
+                    "strikethrough": False,
+                    "underline": False,
+                    "color": "default",
+                }
+            rich_items.append(item)
+
+    for part in parts:
+        if not part:
+            continue
+        if part.startswith("***") and part.endswith("***") and len(part) > 6:
+            _add_segment(part[3:-3], bold=True, italic=True)
+        elif part.startswith("**") and part.endswith("**") and len(part) > 4:
+            _add_segment(part[2:-2], bold=True)
+        elif part.startswith("`") and part.endswith("`") and len(part) > 2:
+            _add_segment(part[1:-1], code=True)
+        elif part.startswith("[") and "](" in part and part.endswith(")"):
+            m = re.match(r'^\[([^\]]+)\]\((https?://[^\s)]+)\)$', part)
+            if m:
+                _add_segment(m.group(1), link=m.group(2))
+            else:
+                _add_segment(part)
+        elif part.startswith("*") and part.endswith("*") and len(part) > 2:
+            _add_segment(part[1:-1], italic=True)
+        else:
+            _add_segment(part)
+
+    return rich_items if rich_items else [{"type": "text", "text": {"content": text[:1900]}}]
+
+
+def _parse_list_line(line: str) -> Optional[Tuple[int, str, str, bool]]:
+    """
+    Felismeri a lista-elemeket és behúzásukat:
+    Visszatérés: (indent_spaces, block_type, clean_text, is_checked) vagy None.
+    """
+    stripped = line.lstrip(" \t")
+    indent = len(line) - len(stripped)
+    # Tabokat 2 szóköznek számoljuk
+    indent = line[:indent].count(" ") + line[:indent].count("\t") * 2
+
+    # Pipálható To-Do: - [ ] vagy - [x]
+    m_todo = re.match(r'^[-*•]\s+\[([ xX])\]\s+(.*)', stripped)
+    if m_todo:
+        checked = m_todo.group(1).lower() == "x"
+        return indent, "to_do", m_todo.group(2).strip(), checked
+
+    # Sima felsorolás: - , * , •
+    m_bullet = re.match(r'^[-*•]\s+(.*)', stripped)
+    if m_bullet:
+        return indent, "bulleted_list_item", m_bullet.group(1).strip(), False
+
+    # Számozott lista: 1. vagy 1)
+    m_num = re.match(r'^\d+[\.\)]\s+(.*)', stripped)
+    if m_num:
+        return indent, "numbered_list_item", m_num.group(1).strip(), False
+
+    return None
+
+
+def _make_list_block(btype: str, content: str, checked: bool = False) -> Dict:
+    rt = parse_inline_markdown(content)
+    if btype == "to_do":
+        return {"object": "block", "type": "to_do", "to_do": {"rich_text": rt, "checked": checked}}
+    return {"object": "block", "type": btype, btype: {"rich_text": rt}}
+
+
 def markdown_to_notion_blocks(markdown_text: str) -> List[Dict]:
     """
-    Átalakítja a Markdown szöveget tiszta Notion blokkokká.
-    Kezeli a címeket (#, ##, ###), felsorolásokat, idézeteket, elválasztókat és bekezdéseket.
+    Átalakítja a komplex Zettelkasten Markdown szöveget valódi, gazdag Notion blokkokká:
+    - Inline formázások (**félkövér**, *dőlt*, `kód`, linkek)
+    - Címsorok (#, ##, ###), elválasztók (---), többsoros idézetek (>)
+    - Többszintű (beágyazott / nested) bullet-, számozott- és pipálható to_do listák
+    - Markdown táblázatok (| A | B |) -> valódi Notion table + table_row blokkok
     """
     lines = markdown_text.splitlines()
-    blocks = []
-
-    def _truncate_text(text: str) -> str:
-        return text[:1950] if len(text) > 1950 else text
-
-    def _rich_text(content: str) -> List[Dict]:
-        return [{"type": "text", "text": {"content": _truncate_text(content)}}]
+    blocks: List[Dict] = []
 
     i = 0
     while i < len(lines):
         line = lines[i].rstrip()
-        
+
         # Üres sorok átugrása
-        if not line:
+        if not line.strip():
             i += 1
             continue
 
@@ -90,12 +181,51 @@ def markdown_to_notion_blocks(markdown_text: str) -> List[Dict]:
             i += 1
             continue
 
-        # Címsorok
+        # Markdown táblázat felismerése (| oszlop1 | oszlop2 |)
+        if line.lstrip().startswith("|") and line.rstrip().endswith("|") and line.count("|") >= 2:
+            table_rows_raw: List[List[str]] = []
+            while i < len(lines):
+                t_line = lines[i].strip()
+                if not (t_line.startswith("|") and t_line.endswith("|")):
+                    break
+                cells = [c.strip() for c in t_line.strip("|").split("|")]
+                # Elválasztó sor kihagyása (pl. |---|---|)
+                if all(re.match(r'^:?-{2,}:?$', c) or c == "" for c in cells):
+                    i += 1
+                    continue
+                table_rows_raw.append(cells)
+                i += 1
+
+            if table_rows_raw:
+                col_count = max(len(r) for r in table_rows_raw)
+                if col_count >= 1:
+                    notion_rows = []
+                    for r in table_rows_raw:
+                        padded = r + [""] * (col_count - len(r))
+                        cell_rts = [parse_inline_markdown(c) if c else [] for c in padded[:col_count]]
+                        notion_rows.append({
+                            "object": "block",
+                            "type": "table_row",
+                            "table_row": {"cells": cell_rts}
+                        })
+                    blocks.append({
+                        "object": "block",
+                        "type": "table",
+                        "table": {
+                            "table_width": col_count,
+                            "has_column_header": True,
+                            "has_row_header": False,
+                            "children": notion_rows[:95]
+                        }
+                    })
+            continue
+
+        # Címsorok (#, ##, ###, ####)
         if line.startswith("# "):
             blocks.append({
                 "object": "block",
                 "type": "heading_1",
-                "heading_1": {"rich_text": _rich_text(line[2:].strip())}
+                "heading_1": {"rich_text": parse_inline_markdown(line[2:].strip())}
             })
             i += 1
             continue
@@ -104,59 +234,94 @@ def markdown_to_notion_blocks(markdown_text: str) -> List[Dict]:
             blocks.append({
                 "object": "block",
                 "type": "heading_2",
-                "heading_2": {"rich_text": _rich_text(line[3:].strip())}
+                "heading_2": {"rich_text": parse_inline_markdown(line[3:].strip())}
             })
             i += 1
             continue
 
-        if line.startswith("### "):
+        if line.startswith("### ") or line.startswith("#### "):
+            clean_h3 = re.sub(r'^#{3,4}\s+', '', line).strip()
             blocks.append({
                 "object": "block",
                 "type": "heading_3",
-                "heading_3": {"rich_text": _rich_text(line[4:].strip())}
+                "heading_3": {"rich_text": parse_inline_markdown(clean_h3)}
             })
             i += 1
             continue
 
-        # Idézet vagy Callout
-        if line.startswith("> "):
-            blocks.append({
-                "object": "block",
-                "type": "quote",
-                "quote": {"rich_text": _rich_text(line[2:].strip())}
-            })
-            i += 1
+        # Idézet (több egymást követő > sor összefűzése egyetlen quote blokkba)
+        if line.lstrip().startswith(">"):
+            quote_lines = []
+            while i < len(lines) and lines[i].lstrip().startswith(">"):
+                q_clean = re.sub(r'^\s*>\s?', '', lines[i]).rstrip()
+                if q_clean:
+                    quote_lines.append(q_clean)
+                i += 1
+            full_quote = "\n".join(quote_lines).strip()
+            if full_quote:
+                blocks.append({
+                    "object": "block",
+                    "type": "quote",
+                    "quote": {"rich_text": parse_inline_markdown(full_quote)}
+                })
             continue
 
-        # Felsorolás (Bullet)
-        if line.lstrip().startswith(("- ", "* ", "• ")):
-            clean_line = re.sub(r'^\s*[-*•]\s+', '', line)
-            blocks.append({
-                "object": "block",
-                "type": "bulleted_list_item",
-                "bulleted_list_item": {"rich_text": _rich_text(clean_line)}
-            })
-            i += 1
-            continue
+        # Lista elemek (többszintű hierarchia támogatással max 2 gyermek-szintig, Notion API szabály szerint)
+        parsed_list = _parse_list_line(line)
+        if parsed_list:
+            level0_blocks: List[Dict] = []
+            base_indent = parsed_list[0]
+            while i < len(lines):
+                curr_line = lines[i].rstrip()
+                if not curr_line.strip():
+                    # Ha a következő nem-üres sor behúzott al-elem, ne szakítsuk meg a listát
+                    if i + 1 < len(lines) and _parse_list_line(lines[i + 1].rstrip()):
+                        i += 1
+                        continue
+                    break
+                p_item = _parse_list_line(curr_line)
+                if not p_item:
+                    break
+                ind, btype, ctext, chk = p_item
+                new_block = _make_list_block(btype, ctext, chk)
 
-        # Számozott lista
-        match_num = re.match(r'^\s*\d+[\.\)]\s+(.*)', line)
-        if match_num:
-            blocks.append({
-                "object": "block",
-                "type": "numbered_list_item",
-                "numbered_list_item": {"rich_text": _rich_text(match_num.group(1))}
-            })
-            i += 1
+                if ind <= base_indent or not level0_blocks:
+                    level0_blocks.append(new_block)
+                elif ind <= base_indent + 3:
+                    # 1. szintű gyermek (al-pont)
+                    parent = level0_blocks[-1]
+                    ptype = parent["type"]
+                    parent[ptype].setdefault("children", []).append(new_block)
+                else:
+                    # 2. szintű gyermek (unoka-pont)
+                    parent = level0_blocks[-1]
+                    ptype = parent["type"]
+                    lvl1_list = parent[ptype].setdefault("children", [])
+                    if lvl1_list:
+                        lvl1_parent = lvl1_list[-1]
+                        l1_type = lvl1_parent["type"]
+                        lvl1_parent[l1_type].setdefault("children", []).append(new_block)
+                    else:
+                        lvl1_list.append(new_block)
+                i += 1
+
+            blocks.extend(level0_blocks)
             continue
 
         # Normál bekezdés (együtt tartva az összetartozó sorokat)
-        para_lines = [line]
+        para_lines = [line.strip()]
         while i + 1 < len(lines):
             next_line = lines[i + 1].rstrip()
-            if not next_line or next_line.startswith(("#", "-", "*", ">", "---", "•")) or re.match(r'^\s*\d+[\.\)]\s+', next_line):
+            if (
+                not next_line.strip()
+                or next_line.strip() in ["---", "***", "___"]
+                or next_line.startswith("#")
+                or next_line.lstrip().startswith(">")
+                or (next_line.lstrip().startswith("|") and next_line.rstrip().endswith("|"))
+                or _parse_list_line(next_line) is not None
+            ):
                 break
-            para_lines.append(next_line)
+            para_lines.append(next_line.strip())
             i += 1
 
         full_para = " ".join(para_lines).strip()
@@ -166,7 +331,7 @@ def markdown_to_notion_blocks(markdown_text: str) -> List[Dict]:
                 blocks.append({
                     "object": "block",
                     "type": "paragraph",
-                    "paragraph": {"rich_text": _rich_text(chunk)}
+                    "paragraph": {"rich_text": parse_inline_markdown(chunk)}
                 })
         i += 1
 

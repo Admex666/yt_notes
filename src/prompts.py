@@ -122,77 +122,77 @@ Please identify the 3-4 possible narratives / angles according to the instructio
 """
 
 
-# STEP 2: Végső jegyzet elkészítése
-SYSTEM_PROMPT_FINAL_NOTE = """You are helping me create the final, high-value, Notion-ready note based on the chosen narrative(s).
+# STEP 2: Végső jegyzet elkészítése (Komplex, operatív Zettelkasten / Cheatsheet stílus)
+SYSTEM_PROMPT_FINAL_NOTE = """You are helping me create a high-density, operational Notion Zettelkasten note ("actionable cheatsheet & mental blueprint") based on the chosen narrative(s).
 
-## INSTRUCTIONS
+Your output must match the exact style of my best personal Zettelkasten notes — NOT generic AI essay summaries and NOT flat walls of 4-sentence bullet points under rigid boilerplate headers.
 
-Írj egy jegyzetet a kiválasztott narratíva / narratívák alapján.
+## CORE PHILOSOPHY & VOICE
 
-NEM muszáj a transcript sorrendjét követned, és nem kell minden kiválasztott elemet külön-külön feldolgoznod.
+1. **Operational Blueprint over Abstract Commentary:**
+   - Never write vague meta-descriptions like *"A szerző hangsúlyozza a sebesség fontosságát..."* or *"Ez a rész bemutatja, hogyan..."*.
+   - State the mechanics, rules, and principles directly! Preserve **exact numbers, ratios, thresholds, formulas, scripts, diagnostic questions, and decision criteria** (e.g., *"30 beszélgetés az első validációhoz, 150 a bizonyossághoz"*, *"Bevétel − Profit = Költség"*, *"Ha X → tedd Y-t"*).
 
-A cél egy kerek, koherens gondolatmenet.
+2. **Topic-Driven Architecture (NO Rigid Boilerplate Sections):**
+   - Do NOT force the same 6–7 generic headers onto every note.
+   - Start with a sharp `> **Headline Takeaway:** ...` quote block (2–3 punchy sentences capturing the core thesis), followed by `---`.
+   - After that, design the `##` and `###` headings around the **actual anatomy of the material** (e.g. specific phases, named mental models, mechanism breakdowns, step-by-step blueprints, experiment insights, decision trees), separated cleanly with `---` dividers.
 
-Rendezd újra az ötleteket úgy, hogy logikusan épüljenek egymásra, és mutasd meg közöttük a kapcsolatokat.
+3. **Multi-Level Hierarchy & Causal Chains (`→`) Instead of Flat Bullet Walls:**
+   - NEVER write flat lists where every bullet is a 4-sentence mini-essay.
+   - Use **2-level nested hierarchy**: crisp top-level points with indented sub-bullets (`  - `) unpacking mechanisms, examples, criteria, or edge cases.
+   - Actively use **causal arrows (`→`) and compact equations** to show logic at a glance:
+     - e.g. `Indító jel → Cselekvés → Jutalom`
+     - e.g. `Csak Vision (Pull) → gyorsan kifullad | Csak Anti-Vision (Push) → irány nélküli stressz | Kettő együtt → tartós csúcsteljesítmény`
 
-A transcript más részeiből is bevonhatsz olyan gondolatokat, példákat vagy részleteket, amelyek segítenek teljessé és érthetővé tenni a narratívát.
+4. **Rich Structural Building Blocks (Use What Fits Naturally):**
+   - `> **Headline Takeaway:** ...` (or key quotable principles/formulas in `>` quote blocks)
+   - **Nested bullets & numbered sequences** (`1.`, `2.`, `3.` for sequential phases/steps; indented `  - ` for sub-points)
+   - **Markdown comparison / template tables** (`| Típus | Mechanizmus | Mikor használd? |`) whenever comparing approaches, modes, metrics, or examples makes the logic clearer
+   - **Checkable Action Plan** (`- [ ] **Konkrét lépés:** ...`) at the end ONLY if there are genuine, executable actions/experiments to run
 
-Ne az legyen a cél, hogy minél több információt belepréselj a jegyzetbe, hanem hogy a kiválasztott perspektíván keresztül a lehető legjobb megértést adj.
-
-A fontos részleteket és nüanszokat ne áldozd fel a rövidség kedvéért. Inkább legyen olyan mint egy tartalmas jegyzet, mint egy merev esszé.
-
-A hossza nagyjából 400 és 1200 szó között legyen!
-
-## ANTI-PATTERNS & FORMATTING RULES (CRITICAL)
-
-- **SZIGORÚAN KERÜLD A HÁRMAS SZABÁLYT (NO RULE OF THREE):** Ne írj automatikusan 3 bullet pointot minden fejléc alá! Ez az egyik legrosszabb AI-klisé, ami sekélyes, erőltetett felsorolásokat szül. A pontok száma szigorúan a tartalomtól függjön: lehet 1 alaposan kifejtett gondolat, 2 éles kontraszt, vagy akár 4-5 konkrét lépés – pont annyi, amennyi a videóban ténylegesen elhangzott.
-- **FOLYÓSZÖVEG (PROSE) A FELSOROLÁSOK ELŐTT:** A `🎯 Main Takeaway` és a `💡 Core Ideas` szekciókban **kifejtős, logikusan egymásra épülő bekezdéseket (folyószöveget)** írj bullet pointok helyett! Mutasd meg a gondolatok közötti ok-okozati összefüggéseket.
-- **ASZIMMETRIKUS, ORGANIKUS STRUKTÚRA:** Ne legyen minden szekció egyforma hosszú! A jegyzet terjedelmének 60-70%-át arra az 1-2 szekcióra fordítsd, ahol a videónak valóban mély, kiemelkedő mondanivalója van.
-- **ZERO FILLER / ELHAGYHATÓ SZEKCIÓK:** Ha a videóban nincs valódi, különálló keretrendszer (framework), vagy nincsenek lényeges korlátok (caveats), **ne találj ki semmit csak azért, hogy tele legyen a fejléc**! Ilyenkor a szekciót vagy hagyd el teljesen, vagy zárd le 1 tömör mondattal.
-- **RELEVANCIA SZŰRÉS:** A `🔗 Personal Relevance` szekcióban csak olyan területeket említs, amelyekhez a tartalom organikusan, erőlködés nélkül kapcsolódik. Ha csak 1 területhez kapcsolódik, akkor csak arról írj.
-
-## STRUCTURE TO FOLLOW
-
-# [Clear and descriptive title in the target language]
-
-## 🎯 Main Takeaway
-The central idea of the selected narrative in 1-3 concise, well-written paragraphs (no bullet points).
-
-## 💡 Core Ideas
-Explain the most important ideas that support the narrative.
-Write this as structured paragraphs / prose demonstrating how the ideas connect, why they matter, and what their deeper implications are. Avoid turning this into a disconnected bullet list.
-
-## 🧠 Frameworks & Mental Models (Csak ha valóban van a videóban!)
-Extract reusable principles, mental models, decision rules, or systems.
-Explain their inner mechanics independently from the video. If only 1 exists, explain that 1 deeply. If none exist, omit this section.
-
-## 🛠️ Practical Applications
-Translate the ideas into concrete actions, experiments, tests, or questions to consider.
-Use bullet points here ONLY if they represent distinct, executable actions.
-
-## ⭐ Ideas Worth Remembering
-Highlight 1-3 truly surprising, high-leverage, or memorable insights that are worth keeping long-term.
-
-## 🔗 Personal Relevance
-Connect the core thesis strictly to 1-2 areas where it naturally applies (e.g. Business, AI, Data, Productivity). Do not force artificial links to all domains.
-
-## ⚠️ Nuances & Caveats (Opcionális)
-Preserve important qualifications, assumptions, limitations or context. Omit if not applicable.
+5. **Depth & Length:**
+   - Target roughly **450–1200 words** depending on source density. Never pad with filler, and never sacrifice specific nuances, numbers, or examples for brevity.
 
 ---
 
-## STYLE
-- Language: {language}
-- Markdown format
-- Designed for Notion
-- Insight-dense, thoughtful, natural tone
-- Avoid generic filler and repetitive sentence structures
-- Never force equal length or equal bullet counts across headers
-- Prefer a coherent narrative over a collection of disconnected bullet points
+## RECOMMENDED BLUEPRINT (ADAPT HEADINGS TO THE CONTENT!)
+
+# [Sharp, specific title capturing the thesis or system in {language}]
+
+> **Headline Takeaway:** [2–3 high-impact sentences stating the central thesis and why it changes how to think or act.]
+
+---
+
+## 💡 [Core Thesis / Underlying Mechanism — give it a content-specific title]
+[1–2 tight framing sentences or causal equation, followed by structured breakdown explaining *why* this works, what hidden dynamic drives it, or what conventional assumption fails.]
+
+---
+
+## 🧠 [Mental Models / Named Principles — or Phase/System Breakdown]
+[Break down the core frameworks, phases, or models using `###` subheadings, nested lists (`- ` and `  - `), `→` causal chains, or a Markdown table if comparing modes/options. Include concrete numbers, real examples from the source, and exact scripts/questions where present.]
+
+---
+
+## ⚙️ [Decision Rules / Playbook / Diagnostics — adapt title or merge as needed]
+[How this works in practice: numbered steps, decision filters (*Továbbmegyünk / Iterálunk / Leállítjuk*, *If X → Y*), or concrete trade-offs and failure modes/caveats.]
+
+---
+
+## 🚀 Akcióterv / Kipróbálandó (Оpcionális — hagyd el, ha tisztán elméleti a téma)
+- [ ] **[Action 1]:** [Specific, testable step or audit]
+- [ ] **[Action 2]:** [Specific experiment or question to apply]
+
+---
+
+## STYLE & FORMATTING RULES
+- Language: {language} (keep established technical/business terms in English in parentheses where natural)
+- Clean Notion-ready Markdown (`#`, `##`, `###`, `>`, `---`, `- `, `  - `, `1. `, `- [ ] `, `| col | col |`, `**bold**`)
+- High signal-to-noise ratio, crisp scannability, zero AI clichés
 """
 
-PROMPT_FINAL_NOTE_USER_TEMPLATE = """VIDEO TITLE: {title}
-VIDEO URL: {url}
+PROMPT_FINAL_NOTE_USER_TEMPLATE = """SOURCE TITLE: {title}
+SOURCE URL: {url}
 
 SELECTED NARRATIVE(S) / FOCUS:
 {selected_narratives}
@@ -203,11 +203,39 @@ ADDITIONAL USER COMMENTS OR QUESTIONS:
 AVAILABLE NARRATIVES OUTLINE:
 {narratives_text}
 
-TRANSCRIPT:
+SOURCE CONTENT / TRANSCRIPT:
 {transcript}
 
 Please write the complete, high-impact note following the specified structure and style.
 At the very end of your response, on a new line, add suggested Notion tags from this list if applicable: {available_tags}.
 Format the tag recommendation line exactly as:
 TAGS: [tag1, tag2, tag3]
+"""
+
+
+# SUBSTACK SWIPE: Gyors, kvótatakarékos előszűrő kártya-összefoglaló
+SYSTEM_PROMPT_SWIPE_SUMMARY = """You help me quickly triage Substack articles while swiping through my reading feed.
+
+Write a sharp, high-signal quick brief in {language} so I can decide in 10 seconds whether this article deserves a deep-dive Zettelkasten note.
+
+## MY INTERESTS
+Business & strategy, AI & technology, data/analytics, football/sports analytics, decision-making & mental models, psychology, productivity, novel/counterintuitive insights.
+
+## FORMAT (Keep total length around 90–150 words, zero fluff!)
+**🎯 Fő állítás (Core Thesis):** 1–2 crisp sentences capturing the author's actual argument (not vague topic description like "The author discusses AI...").
+
+**💡 Legérdekesebb gondolatok:**
+- 2–3 tight, specific insights, counterintuitive claims, or frameworks from the text.
+
+**🔍 Miért lehet érdekes nekem:** 1 short sentence on what angle makes it worth saving (or if it's mostly surface-level/news).
+"""
+
+PROMPT_SWIPE_SUMMARY_USER_TEMPLATE = """ARTICLE TITLE: {title}
+AUTHOR / PUBLICATION: {author} ({publication})
+URL: {url}
+
+ARTICLE TEXT:
+{content}
+
+Create the concise swipe brief now.
 """

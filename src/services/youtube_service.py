@@ -1,7 +1,15 @@
 import re
 from typing import List, Dict, Optional, Tuple
-import yt_dlp
-from youtube_transcript_api import YouTubeTranscriptApi
+
+try:
+    import yt_dlp
+except ImportError:
+    yt_dlp = None
+
+try:
+    from youtube_transcript_api import YouTubeTranscriptApi
+except ImportError:
+    YouTubeTranscriptApi = None
 
 def extract_video_id(url_or_id: str) -> Optional[str]:
     """Kinyeri a 11 karakteres YouTube videó ID-t URL-ből vagy szövegből."""
@@ -27,6 +35,9 @@ def get_playlist_videos(playlist_url: str) -> List[Dict]:
     Lekéri a megadott YouTube playlist összes videójának alapadatait.
     Gyors és nem tölt le videófájlokat.
     """
+    if yt_dlp is None:
+        print("Hiányzik a yt-dlp csomag (pip install yt-dlp).")
+        return []
     ydl_opts = {
         'extract_flat': 'in_playlist',
         'quiet': True,
@@ -94,6 +105,8 @@ def get_video_transcript(video_id: str) -> Tuple[Optional[str], Optional[str], O
         return None, None, "Érvénytelen videó ID vagy URL."
 
     try:
+        if YouTubeTranscriptApi is None:
+            raise ImportError("youtube-transcript-api nincs telepítve")
         ytt_api = YouTubeTranscriptApi()
         transcript_list = ytt_api.list(clean_id)
         
