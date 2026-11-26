@@ -61,6 +61,22 @@ python scripts/test_connection.py
 
 ---
 
+## ☁️ Streamlit Cloud Telepítés & Biztonság
+
+1. GitHub-ra commit és push után nyisd meg a [share.streamlit.io](https://share.streamlit.io/) oldalt.
+2. Hozd létre az alkalmazást (`app.py`, `master` branch).
+3. Az **Advanced settings... -> Secrets** részbe másold be:
+```toml
+GOOGLE_API_KEY = "IdeMásoldAGoogleKulcsot"
+NOTION_API_KEY = "IdeMásoldANotionKulcsot"
+NOTION_DATABASE_ID = "86585ef1-f1a6-4ab4-b183-c4f78a452e21"
+APP_PASSWORD = "SajátErősJelszavad"
+DEFAULT_PLAYLIST_URL = "https://www.youtube.com/playlist?list=PLr-48e7JNg_5abe8pP-7fZCMM2KThq61z"
+```
+*(Az `APP_PASSWORD` beállításával az oldal egy bejelentkező képernyőt jelenít meg, így illetéktelenek nem tudnak belépni, nem égethetik az AI kvótádat, és nem látják a Notion adatbázisodat).*
+
+---
+
 ## 📊 Token- és Kvótahasználat
 
 A bal oldalsávban valós időben látható:

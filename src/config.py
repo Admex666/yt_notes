@@ -28,6 +28,7 @@ def get_secret(key: str, default: str = "") -> str:
 GOOGLE_API_KEY = get_secret("GOOGLE_API_KEY") or get_secret("GEMINI_API_KEY")
 NOTION_API_KEY = get_secret("NOTION_API_KEY")
 NOTION_DATABASE_ID = get_secret("NOTION_DATABASE_ID", "86585ef1-f1a6-4ab4-b183-c4f78a452e21")
+APP_PASSWORD = get_secret("APP_PASSWORD", "")
 
 # Notion API version
 NOTION_VERSION = "2022-06-28"

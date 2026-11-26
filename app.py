@@ -1,5 +1,6 @@
 import os
 import datetime
+import hmac
 from typing import Optional
 import streamlit as st
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ from src.config import (
     DEFAULT_MODEL,
     PLAN_INFO_URL,
     DEFAULT_PLAYLIST_URL,
+    APP_PASSWORD,
 )
 from src.services import youtube_service, notion_service, ai_service, substack_service
 
@@ -86,8 +88,59 @@ st.markdown("""
         margin-top: 12px;
         margin-bottom: 12px;
     }
+    .login-container {
+        max-width: 440px;
+        margin: 60px auto;
+        padding: 32px;
+        background-color: #ffffff;
+        border: 1px solid #e1e4e8;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# --- BIZTONSÁGOS JELSZAVAS AZONOSÍTÁS ---
+def check_password() -> bool:
+    """
+    Ellenőrzi, hogy be van-e állítva APP_PASSWORD, és a felhasználó belépett-e.
+    Ha nincs APP_PASSWORD konfigurálva (üres), engedélyezi a belépést.
+    Időzítéses támadások ellen hmac.compare_digest-et használ.
+    """
+    if not APP_PASSWORD:
+        return True
+
+    if st.session_state.get("authenticated", False):
+        return True
+
+    col_pad1, col_center, col_pad2 = st.columns([1, 2, 1])
+    with col_center:
+        st.markdown("""
+        <div style="text-align: center; margin-top: 50px; margin-bottom: 25px;">
+            <div style="font-size: 3rem;">🧠 🔒</div>
+            <h2 style="margin-top: 8px;">Zettelkasten Note Maker</h2>
+            <p style="color: #6c757d;">Az alkalmazás használatához kérlek add meg a jelszót.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        with st.form("login_form", clear_on_submit=False):
+            entered_password = st.text_input("Jelszó", type="password", placeholder="••••••••", help="Streamlit Secrets vagy .env-ben beállított APP_PASSWORD")
+            submit_btn = st.form_submit_button("🔓 Belépés", use_container_width=True)
+
+            if submit_btn:
+                if entered_password and hmac.compare_digest(entered_password.strip(), APP_PASSWORD.strip()):
+                    st.session_state["authenticated"] = True
+                    st.success("Sikeres belépés!")
+                    st.rerun()
+                else:
+                    st.error("Helytelen jelszó! Kérlek próbáld újra.")
+
+        st.caption("🔒 *A privát Notion adatbázisod és az AI kvótád védelme érdekében.*")
+
+    return False
+
+if not check_password():
+    st.stop()
 
 # --- SESSION STATE INICIALIZÁLÁSA ---
 if "videos" not in st.session_state:
@@ -475,6 +528,12 @@ with st.sidebar:
         f"• **Tokenlimit (TPM):** {current_meta.get('tpm', 1000000):,} token/perc"
     )
     st.markdown(f"[🔗 Google AI Studio Részletes Kvóta & Kreditek]({PLAN_INFO_URL})")
+
+    if APP_PASSWORD and st.session_state.get("authenticated", False):
+        st.divider()
+        if st.button("🔒 Kijelentkezés", use_container_width=True):
+            st.session_state["authenticated"] = False
+            st.rerun()
 
 
 # =====================================================================
