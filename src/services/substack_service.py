@@ -13,7 +13,14 @@ from bs4 import BeautifulSoup
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
 STATE_FILE = os.path.join(DATA_DIR, "substack_state.json")
 
-DEFAULT_SUBSTACK_FEEDS: List[str] = []
+DEFAULT_SUBSTACK_FEEDS: List[str] = [
+    "https://fussballcoach.substack.com/feed",
+    "https://alex11marin11.substack.com/feed",
+    "https://bookbase.substack.com/feed",
+    "https://pogatsa.substack.com/feed",
+    "https://cannonstats.substack.com/feed",
+    "https://datadealsfc.substack.com/feed",
+]
 
 HEADERS = {
     "User-Agent": (

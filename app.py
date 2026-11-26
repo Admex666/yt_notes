@@ -374,8 +374,18 @@ with st.sidebar:
             with st.expander(f"📚 Követett csatornák ({len(sub_state['feeds'])})", expanded=False):
                 for idx_f, f_url in enumerate(list(sub_state["feeds"])):
                     c_f1, c_f2 = st.columns([4, 1])
-                    short_label = f_url.replace("https://", "").replace("http://", "").replace("/feed", "")
-                    c_f1.caption(short_label)
+                    clean = f_url.replace("https://", "").replace("http://", "").rstrip("/")
+                    if clean.endswith("/feed"):
+                        clean = clean[:-5]
+                    domain = clean.split("/")[0]
+                    if domain.endswith(".substack.com"):
+                        name = domain[:-13]
+                    elif domain.startswith("www."):
+                        name = domain[4:]
+                    else:
+                        name = domain
+                    short_label = f"@{name}"
+                    c_f1.caption(f"**{short_label}**")
                     if c_f2.button("🗑️", key=f"del_feed_{idx_f}", help="Eltávolítás"):
                         sub_state["feeds"].remove(f_url)
                         substack_service.save_state(sub_state)
